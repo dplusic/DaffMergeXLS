@@ -74,9 +74,9 @@ app.on('ready', async () => {
 
   if (process.platform === 'darwin') {
     template = [{
-      label: 'Electron',
+      label: 'DaffMergeXLS',
       submenu: [{
-        label: 'About ElectronReact',
+        label: 'About DaffMergeXLS',
         selector: 'orderFrontStandardAboutPanel:'
       }, {
         type: 'separator'
@@ -86,7 +86,7 @@ app.on('ready', async () => {
       }, {
         type: 'separator'
       }, {
-        label: 'Hide ElectronReact',
+        label: 'Hide DaffMergeXLS',
         accelerator: 'Command+H',
         selector: 'hide:'
       }, {
