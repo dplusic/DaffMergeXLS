@@ -1,10 +1,14 @@
 import { app, BrowserWindow, Menu } from 'electron';
+import parseArgs from 'minimist';
 
+let argv = null;
 let mainWindow = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support'); // eslint-disable-line
   sourceMapSupport.install();
+
+  argv = parseArgs(process.argv.slice(1));
 }
 
 if (process.env.NODE_ENV === 'development') {
@@ -12,7 +16,14 @@ if (process.env.NODE_ENV === 'development') {
   const path = require('path'); // eslint-disable-line
   const p = path.join(__dirname, '..', 'app', 'node_modules'); // eslint-disable-line
   require('module').globalPaths.push(p); // eslint-disable-line
+
+  argv = parseArgs(process.argv.slice(6));
 }
+
+global.options = {
+  paths: argv._
+};
+
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
