@@ -2,7 +2,7 @@
 import { remote } from 'electron';
 import React, { Component } from 'react';
 import Home from '../components/Home';
-import DaffMergeXLS from '../api/daffmergexls';
+import DaffMergeXLSX from '../api/daffmergexlsx';
 
 export default class HomePage extends Component {
   static contextTypes = {
@@ -19,7 +19,7 @@ export default class HomePage extends Component {
       return;
     }
 
-    const daffMerge = new DaffMergeXLS(paths);
+    const daffMerge = new DaffMergeXLSX(paths);
     daffMerge.onSuccess = () => this.onSuccess();
     daffMerge.onFail = (message) => this.onFail(message);
     daffMerge.run();

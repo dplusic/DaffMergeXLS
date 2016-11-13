@@ -1,6 +1,6 @@
 import opn from 'opn';
 
-export default class DaffMergeXLS {
+export default class DaffMergeXLSX {
   constructor(paths) {
     this.paths = paths;
 
@@ -24,10 +24,10 @@ export default class DaffMergeXLS {
   async diff(base, modified) {
     // TODO diff with daff
 
-    // TODO create xls
-    const xls = modified;
+    // TODO create xlsx
+    const xlsx = modified;
 
-    await this.startProcess(xls);
+    await this.startProcess(xlsx);
 
     // TODO patch
   }
@@ -35,10 +35,10 @@ export default class DaffMergeXLS {
   async merge(base, local, remote, merged) {
     // TODO merge with daff
 
-    // TODO create xls
-    const xls = merged;
+    // TODO create xlsx
+    const xlsx = merged;
 
-    await this.startProcess(xls);
+    await this.startProcess(xlsx);
 
     // TODO check and save merged
   }

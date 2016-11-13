@@ -1,6 +1,6 @@
 {
-  "name": "daff-merge-xls",
-  "productName": "DaffMergeXLS",
+  "name": "daff-merge-xlsx",
+  "productName": "DaffMergeXLSX",
   "version": "0.1.0",
   "description": "Table diff and merge tool based on daff(https://github.com/paulfitz/daff)",
   "main": "./main.js",
