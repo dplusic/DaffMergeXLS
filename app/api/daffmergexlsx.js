@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fsp from 'fs-promise';
 import opn from 'opn';
 import XLSX from 'xlsx-plus';
 import daff from 'daff';
@@ -37,7 +37,7 @@ export default class DaffMergeXLSX {
 
     // TODO patch
 
-    fs.unlinkSync(diffPath);
+    await fsp.unlink(diffPath);
   }
 
   async merge(base, local, remote, merged) {
