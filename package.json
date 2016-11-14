@@ -138,6 +138,7 @@
     "webpack-validator": "^2.2.9"
   },
   "dependencies": {
+    "daff": "dplusic/daff#dist/npm",
     "electron-debug": "^1.0.1",
     "font-awesome": "^4.7.0",
     "opn": "^4.0.2",
