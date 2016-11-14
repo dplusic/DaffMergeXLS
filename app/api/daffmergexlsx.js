@@ -1,6 +1,7 @@
 import fs from 'fs';
 import opn from 'opn';
 import XLSX from 'xlsx-plus';
+import daff from 'daff';
 
 export default class DaffMergeXLSX {
   constructor(paths) {
@@ -24,10 +25,10 @@ export default class DaffMergeXLSX {
   }
 
   async diff(basePath, modifiedPath) {
+    const baseData = DaffMergeXLSX.readData(basePath);
     const modifiedData = DaffMergeXLSX.readData(modifiedPath);
 
-    // TODO diff with daff
-    const dataDiff = modifiedData;
+    const dataDiff = DaffMergeXLSX.daffDiff(baseData, modifiedData);
 
     const diffPath = `${modifiedPath}_DIFF.xlsx`;
     DaffMergeXLSX.writeData(dataDiff, diffPath);
@@ -78,5 +79,20 @@ export default class DaffMergeXLSX {
     const workbook = new XLSX.Workbook();
     workbook.addSheet(new XLSX.Worksheet(data, 'sheet'));
     XLSX.writeFileSync(workbook, filePath);
+  }
+
+  static daffDiff(data1, data2) {
+    const dataDiff = [];
+
+    const table1 = new daff.TableView(data1);
+    const table2 = new daff.TableView(data2);
+    const tableDiff = new daff.TableView(dataDiff);
+
+    const alignment = daff.compareTables(table1, table2).align();
+    const flags = new daff.CompareFlags();
+    const highlighter = new daff.TableDiff(alignment, flags);
+    highlighter.hilite(tableDiff);
+
+    return dataDiff;
   }
 }
