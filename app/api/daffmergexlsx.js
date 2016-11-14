@@ -1,4 +1,5 @@
 import fsp from 'fs-promise';
+import sleep from 'sleep-promise';
 import opn from 'opn';
 import XLSX from 'xlsx-plus';
 import daff from 'daff';
@@ -56,6 +57,21 @@ export default class DaffMergeXLSX {
     this.exitCode = c.exitCode;
     if (this.exitCode !== 0) {
       throw new Error(`error code: ${c.exitCode}`);
+    }
+
+    for (;;) {
+      try {
+        await sleep(1000);
+
+        const fd = await fsp.open(path, 'a');
+        await fsp.close(fd);
+
+        break;
+      } catch (e) {
+        if (e.code !== 'EBUSY') {
+          throw e;
+        }
+      }
     }
   }
 
