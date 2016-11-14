@@ -1,4 +1,6 @@
+import fs from 'fs';
 import opn from 'opn';
+import XLSX from 'xlsx-plus';
 
 export default class DaffMergeXLSX {
   constructor(paths) {
@@ -21,15 +23,20 @@ export default class DaffMergeXLSX {
     }
   }
 
-  async diff(base, modified) {
+  async diff(basePath, modifiedPath) {
+    const modifiedData = DaffMergeXLSX.readData(modifiedPath);
+
     // TODO diff with daff
+    const dataDiff = modifiedData;
 
-    // TODO create xlsx
-    const xlsx = modified;
+    const diffPath = `${modifiedPath}_DIFF.xlsx`;
+    DaffMergeXLSX.writeData(dataDiff, diffPath);
 
-    await this.startProcess(xlsx);
+    await this.startProcess(diffPath);
 
     // TODO patch
+
+    fs.unlinkSync(diffPath);
   }
 
   async merge(base, local, remote, merged) {
@@ -61,5 +68,15 @@ export default class DaffMergeXLSX {
     if (this.onFail != null) {
       this.onFail(message);
     }
+  }
+
+  static readData(filePath) {
+    return XLSX.readFileSync(filePath).toArray()[0];
+  }
+
+  static writeData(data, filePath) {
+    const workbook = new XLSX.Workbook();
+    workbook.addSheet(new XLSX.Worksheet(data, 'sheet'));
+    XLSX.writeFileSync(workbook, filePath);
   }
 }
