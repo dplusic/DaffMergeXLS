@@ -1,6 +1,7 @@
 import fsp from 'fs-promise';
 import sleep from 'sleep-promise';
 import opn from 'opn';
+import Future from 'fibers/future';
 import XLSX from 'xlsx-plus';
 import daff from 'daff';
 
@@ -32,7 +33,7 @@ export default class DaffMergeXLSX {
     const dataDiff = DaffMergeXLSX.daffDiff(baseData, modifiedData);
 
     const diffPath = `${modifiedPath}_DIFF.xlsx`;
-    DaffMergeXLSX.writeData(dataDiff, diffPath);
+    await DaffMergeXLSX.daffRender(dataDiff, diffPath);
 
     await this.startProcess(diffPath);
 
@@ -99,6 +100,10 @@ export default class DaffMergeXLSX {
     XLSX.writeFileSync(workbook, filePath);
   }
 
+  static async writeBytes(bytes, filePath) {
+    await fsp.writeFile(filePath, bytes);
+  }
+
   static daffDiff(data1, data2) {
     const dataDiff = [];
 
@@ -112,6 +117,16 @@ export default class DaffMergeXLSX {
     highlighter.hilite(tableDiff);
 
     return dataDiff;
+  }
+
+  static async daffRender(dataDiff, filePath) {
+    const tableDiff = new daff.TableView(dataDiff);
+    let bytes = null;
+    await Future.task(() => {
+      const daffXlsx = new daff.Xlsx();
+      bytes = daffXlsx.renderTable(tableDiff);
+    }).promise();
+    await DaffMergeXLSX.writeBytes(bytes, filePath);
   }
 
   static daffPatch(data, dataDiff) {
