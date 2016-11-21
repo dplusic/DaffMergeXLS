@@ -40,7 +40,9 @@ export default class DaffMergeXLSX {
 
     const updatedDataDiff = await DaffMergeXLSX.readData(diffPath);
     const updatedModifiedData = DaffMergeXLSX.daffPatch(baseData, updatedDataDiff);
-    await DaffMergeXLSX.writeData(updatedModifiedData, modifiedPath);
+    if (updatedModifiedData != null) {
+      await DaffMergeXLSX.writeData(updatedModifiedData, modifiedPath);
+    }
 
     await fsp.unlink(diffPath);
   }
@@ -141,11 +143,21 @@ export default class DaffMergeXLSX {
   }
 
   static daffPatch(data, dataDiff) {
+    if (dataDiff.length === 1) {
+      return data;
+    }
+
     const table = new daff.TableView(data);
+    const tableOrigin = table.clone();
     const tableDiff = new daff.TableView(dataDiff);
 
     const patcher = new daff.HighlightPatch(table, tableDiff);
     patcher.apply();
+
+    if (table.isSimilar(tableOrigin)) {
+      // somthing wrong
+      return null;
+    }
 
     return data;
   }
