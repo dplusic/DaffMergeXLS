@@ -2,8 +2,9 @@ import fsp from 'fs-promise';
 import sleep from 'sleep-promise';
 import opn from 'opn';
 import Future from 'fibers/future';
-import XLSX from 'xlsx-plus';
 import daff from 'daff';
+
+const Excel = require('exceljs');
 
 export default class DaffMergeXLSX {
   constructor(paths) {
@@ -27,8 +28,8 @@ export default class DaffMergeXLSX {
   }
 
   async diff(basePath, modifiedPath) {
-    const baseData = DaffMergeXLSX.readData(basePath);
-    const modifiedData = DaffMergeXLSX.readData(modifiedPath);
+    const baseData = await DaffMergeXLSX.readData(basePath);
+    const modifiedData = await DaffMergeXLSX.readData(modifiedPath);
 
     const dataDiff = DaffMergeXLSX.daffDiff(baseData, modifiedData);
 
@@ -37,9 +38,9 @@ export default class DaffMergeXLSX {
 
     await this.startProcess(diffPath);
 
-    const updatedDataDiff = DaffMergeXLSX.readData(diffPath);
+    const updatedDataDiff = await DaffMergeXLSX.readData(diffPath);
     const updatedModifiedData = DaffMergeXLSX.daffPatch(baseData, updatedDataDiff);
-    DaffMergeXLSX.writeData(updatedModifiedData, modifiedPath);
+    await DaffMergeXLSX.writeData(updatedModifiedData, modifiedPath);
 
     await fsp.unlink(diffPath);
   }
@@ -90,14 +91,24 @@ export default class DaffMergeXLSX {
     }
   }
 
-  static readData(filePath) {
-    return XLSX.readFileSync(filePath).toArray()[0];
+  static async readData(filePath) {
+    const workbook = new Excel.Workbook();
+    const reader = filePath.toLowerCase().endsWith('xlsx') ? workbook.xlsx : workbook.csv;
+    await reader.readFile(filePath);
+    const worksheet = workbook.getWorksheet(1);
+    const data = [];
+    worksheet.eachRow(true, (row, rowNumber) => {
+      data[rowNumber - 1] = row.values.slice(1);
+    });
+    return data;
   }
 
-  static writeData(data, filePath) {
-    const workbook = new XLSX.Workbook();
-    workbook.addSheet(new XLSX.Worksheet(data, 'sheet'));
-    XLSX.writeFileSync(workbook, filePath);
+  static async writeData(data, filePath) {
+    const workbook = new Excel.Workbook();
+    const writer = filePath.toLowerCase().endsWith('xlsx') ? workbook.xlsx : workbook.csv;
+    const worksheet = workbook.addWorksheet('Sheet');
+    worksheet.addRows(data);
+    await writer.writeFile(filePath);
   }
 
   static async writeBytes(bytes, filePath) {
