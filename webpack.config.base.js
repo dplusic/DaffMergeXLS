@@ -38,7 +38,6 @@ export default validate({
     // (mysql, mongodb, and so on..)
     'fs-promise',
     'fibers/future',
-    'xlsx-plus',
     'exceljs',
     'daff'
   ]

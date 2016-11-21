@@ -155,8 +155,7 @@
     "redux": "^3.6.0",
     "redux-thunk": "^2.1.0",
     "sleep-promise": "^2.0.0",
-    "source-map-support": "^0.4.6",
-    "xlsx-plus": "dplusic/js-xlsx-plus"
+    "source-map-support": "^0.4.6"
   },
   "devEngines": {
     "node": ">=6.x",
