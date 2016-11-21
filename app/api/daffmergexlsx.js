@@ -47,15 +47,23 @@ export default class DaffMergeXLSX {
     await fsp.unlink(diffPath);
   }
 
-  async merge(base, local, remote, merged) {
-    // TODO merge with daff
+  async merge(basePath, localPath, remotePath, mergedPath) {
+    const baseData = await DaffMergeXLSX.readData(basePath);
+    const localData = await DaffMergeXLSX.readData(localPath);
+    const remoteData = await DaffMergeXLSX.readData(remotePath);
 
-    // TODO create xlsx
-    const xlsx = merged;
+    const mergingData = DaffMergeXLSX.daffMerge(baseData, localData, remoteData);
 
-    await this.startProcess(xlsx);
+    const mergingPath = `${mergedPath}_MERGING.xlsx`;
+    await DaffMergeXLSX.daffRenderMerging(mergingData, mergingPath);
 
-    // TODO check and save merged
+    await this.startProcess(mergingPath);
+
+    const mergedData = await DaffMergeXLSX.readData(mergingPath);
+    // TODO check merged
+    await DaffMergeXLSX.writeData(mergedData, mergedPath);
+
+    await fsp.unlink(mergingPath);
   }
 
   async startProcess(path) {
@@ -160,5 +168,55 @@ export default class DaffMergeXLSX {
     }
 
     return data;
+  }
+
+  static daffMerge(parentData, localData, remoteData) {
+    const parentTable = new daff.TableView(parentData);
+    const localTable = new daff.TableView(localData);
+    const remoteTable = new daff.TableView(remoteData);
+
+    const flags = new daff.CompareFlags();
+    const merger = new daff.Merger(parentTable, localTable, remoteTable, flags);
+    merger.apply();
+    const conflictInfos = merger.getConflictInfos();
+
+    return { mergedData: localData, conflictInfos };
+  }
+
+  static async daffRenderMerging(mergingData, mergingPath) {
+    const mergedData = mergingData.mergedData;
+    const conflictInfos = mergingData.conflictInfos;
+
+    const workbook = new Excel.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet');
+    worksheet.addRows(mergedData);
+
+    if (conflictInfos.length > 0) {
+      const mergingColumnIndex = worksheet.columnCount + 1;
+
+      worksheet.getCell(1, mergingColumnIndex).value = '_MERGE_';
+
+      conflictInfos.forEach((conflictInfo) => {
+        const conflictCell = worksheet.getCell(conflictInfo.row + 1, conflictInfo.col + 1);
+        conflictCell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: {
+            argb: 'FFFF0000'
+          }
+        };
+        const mergingCell = worksheet.getCell(conflictInfo.row + 1, mergingColumnIndex);
+        mergingCell.value = 'CONFLICT';
+        mergingCell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: {
+            argb: 'FFAAAAFF'
+          }
+        };
+      });
+    }
+
+    await workbook.xlsx.writeFile(mergingPath);
   }
 }
