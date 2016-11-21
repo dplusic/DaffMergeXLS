@@ -22,6 +22,7 @@ export default class HomePage extends Component {
     const daffMerge = new DaffMergeXLSX(paths);
     daffMerge.onSuccess = () => this.onSuccess();
     daffMerge.onFail = (message) => this.onFail(message);
+    daffMerge.onNotMerged = (resolve, reject) => this.onNotMerged(resolve, reject);
     daffMerge.run();
   }
 
@@ -35,6 +36,12 @@ export default class HomePage extends Component {
     } else {
       this.context.router.push('/error/ERROR');
     }
+  }
+
+  onNotMerged(resolve, reject) {
+    // TODO show confirm message
+    this.context.router.push('/error/Not Merged');
+    reject();
   }
 
   close() {

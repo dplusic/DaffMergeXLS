@@ -12,6 +12,7 @@ export default class DaffMergeXLSX {
 
     this.onSuccess = null;
     this.onFail = null;
+    this.onNotMerged = null;
   }
 
   async run() {
@@ -57,11 +58,19 @@ export default class DaffMergeXLSX {
     const mergingPath = `${mergedPath}_MERGING.xlsx`;
     await DaffMergeXLSX.daffRenderMerging(mergingData, mergingPath);
 
-    await this.startProcess(mergingPath);
+    for (;;) {
+      await this.startProcess(mergingPath);
 
-    const mergedData = await DaffMergeXLSX.readData(mergingPath);
-    // TODO check merged
-    await DaffMergeXLSX.writeData(mergedData, mergedPath);
+      const mergedData = await DaffMergeXLSX.readData(mergingPath);
+      if (DaffMergeXLSX.checkMerged(mergedData, mergingData)) {
+        await DaffMergeXLSX.writeData(mergedData, mergedPath);
+        break;
+      }
+
+      if (!await this.callOnNotMerged()) {
+        break;
+      }
+    }
 
     await fsp.unlink(mergingPath);
   }
@@ -98,6 +107,21 @@ export default class DaffMergeXLSX {
   callOnFail(message) {
     if (this.onFail != null) {
       this.onFail(message);
+    }
+  }
+
+  async callOnNotMerged() {
+    if (this.onNotMerged == null) {
+      return false;
+    }
+
+    try {
+      await new Promise((resolve, reject) => {
+        this.onNotMerged(resolve, reject);
+      });
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -218,5 +242,9 @@ export default class DaffMergeXLSX {
     }
 
     await workbook.xlsx.writeFile(mergingPath);
+  }
+
+  static checkMerged(mergedData, mergingData) {
+    return mergedData[0].length === mergingData.mergedData[0].length;
   }
 }
