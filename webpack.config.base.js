@@ -39,6 +39,7 @@ export default validate({
     'fs-promise',
     'fibers/future',
     'xlsx-plus',
+    'exceljs',
     'daff'
   ]
 });

@@ -141,6 +141,7 @@
   "dependencies": {
     "daff": "dplusic/daff#dist/npm",
     "electron-debug": "^1.0.1",
+    "exceljs": "^0.2.36",
     "fibers": "^1.0.15",
     "font-awesome": "^4.7.0",
     "fs-promise": "^1.0.0",
